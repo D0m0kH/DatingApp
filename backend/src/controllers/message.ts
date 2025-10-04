@@ -3,10 +3,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
 import { AppError, AuthError, RateLimitError } from '../utils/errors';
-import { Dtos, Message } from '../types/shared';
+import { Message, MessageSendDto, MessageStatus } from '../types/shared';
 import { redis } from '../utils/redis';
 import { io as socketEmitter } from '../utils/socketEmitter';
-import { MessageStatus } from '@prisma/client';
 
 // --- Anti-Spam Rate Limiter (Server-side per-match, Redis-backed conceptual) ---
 const MESSAGE_RATE_LIMIT_KEY = (matchId: string, userId: string) => `msg:rate:${matchId}:${userId}`;
@@ -33,7 +32,6 @@ const checkMessageRateLimit = async (matchId: string, userId: string): Promise<v
 // --- Helpers ---
 const toMessageDto = (message: any): Message => ({
     id: message.id,
-    matchId: message.matchId,
     senderId: message.senderId,
     text: message.text || '', // NOTE: This text is assumed E2E encrypted, server only stores/forwards
     attachments: message.attachments as string[],
@@ -49,7 +47,7 @@ export const sendMessage = async (req: Request, res: Response, next: NextFunctio
     try {
         const senderId = req.user!.id;
         const matchId = req.params.matchId;
-        const { text, attachments = [], nlpIntent } = req.validatedBody as Dtos.MessageSend;
+        const { text, attachments = [], nlpIntent } = req.validatedBody as any;
 
         // 1. Check Rate Limit
         await checkMessageRateLimit(matchId, senderId);

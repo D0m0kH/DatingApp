@@ -5,3 +5,9 @@ dist
 build
 .expo
 
+# Compiled JavaScript files (TypeScript projects)
+*.js
+!*.config.js
+!jest.config.js
+!app.config.js
+

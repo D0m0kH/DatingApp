@@ -6,9 +6,9 @@ import crypto from 'crypto';
 import { ZodError } from 'zod';
 
 import { prisma } from '../utils/prisma';
-import { signJwt } from '../utils/jwt';
+import { signJwt, getTokenFromHeader, verifyJwt } from '../utils/jwt';
 import { AuthError, ValidationError, AppError, NotFoundError, IdentityError } from '../utils/errors';
-import { Dtos, AuthResponse, RegisterDto, LoginDto } from '../types/shared';
+import { AuthResponse, RegisterDto, LoginDto } from '../types/shared';
 
 // --- Stubbed Function for Email Service ---
 const sendVerificationEmail = async (email: string, token: string) => {
@@ -168,7 +168,7 @@ export const login = async (req: Request, res: Response<AuthResponse>, next: Nex
         geoHash: user.geoHash || 'u0',
         isIdentityVerified: user.isIdentityVerified,
         isPremium: user.profile?.isPremium || false,
-        photos: user.photos.map(p => ({
+        photos: user.photos.map((p: any) => ({
             id: p.id,
             url: `https://${process.env.S3_BUCKET}/photos/${p.s3Key}`,
             isPrimary: p.isPrimary,
@@ -254,7 +254,7 @@ export const refresh = async (req: Request, res: Response<AuthResponse>, next: N
           geoHash: user.geoHash || 'u0',
           isIdentityVerified: user.isIdentityVerified,
           isPremium: user.profile?.isPremium || false,
-          photos: user.photos.map(p => ({
+          photos: user.photos.map((p: any) => ({
               id: p.id, url: `https://${process.env.S3_BUCKET}/photos/${p.s3Key}`, isPrimary: p.isPrimary, status: 'APPROVED', aiTags: []
           })),
           topInterests: user.profile?.interests.slice(0, 3) || [],
@@ -323,7 +323,7 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
 export const verifyIdentity = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = req.user!.id;
-        const { proof, verifierId } = req.validatedBody as Dtos.ZKPVerifyDto;
+        const { proof, verifierId } = req.validatedBody as any;
 
         // 1. Call ZKP/Biometric Service (Conceptual)
         console.log(`[ZKP STUB] Validating proof for user ${userId} via verifier ${verifierId}...`);

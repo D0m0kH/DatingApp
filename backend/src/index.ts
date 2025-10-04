@@ -81,9 +81,8 @@ const terminusOptions: TerminusOptions = {
   },
   signal: 'SIGTERM',
   onSignal,
-  onShutdown: () => console.log('Shutdown finished.'),
+  onShutdown: async () => console.log('Shutdown finished.'),
   timeout: 10000, // Increased timeout for workers to finish current jobs
-  use  ,UnifiedTopology: false,
 };
 
 createTerminus(server, terminusOptions);

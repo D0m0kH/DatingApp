@@ -12,7 +12,7 @@ const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 if (!STRIPE_SECRET) { throw new Error('STRIPE_SECRET_KEY environment variable is not set.'); }
 
-const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2023-10-16' });
+const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2025-09-30.clover' });
 
 // --- Public Functions ---
 

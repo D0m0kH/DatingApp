@@ -1,6 +1,7 @@
 // backend/src/utils/jwt.ts
 
-import jwt, { SignOptions, VerifyOptions, JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
+import { SignOptions, VerifyOptions, JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { Request } from 'express';
 import { AuthError } from './errors';
 
@@ -39,7 +40,7 @@ export type JwtPayload = {
 export function signJwt(payload: { userId: string, email: string, fingerprintId: string }, expiresIn: string | number = '15m'): string {
   const signOptions: SignOptions = {
     issuer: JWT_ISSUER,
-    expiresIn,
+    expiresIn: expiresIn as any, // Type compatibility workaround for jsonwebtoken
     algorithm: JWT_ALGORITHM as jwt.Algorithm, // Enforce configured algorithm
     // Advanced: PoP Placeholder - Add a key thumbprint for sender constraint (PoP)
     // audience: payload.fingerprintId // Can use fingerprint as audience constraint

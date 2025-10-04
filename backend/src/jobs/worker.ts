@@ -1,6 +1,6 @@
 // backend/src/jobs/worker.ts
 
-import { Worker } from 'bullmq';
+import { Worker, Queue } from 'bullmq';
 import { redis } from '../utils/redis';
 
 /**
@@ -52,9 +52,6 @@ export function startModerationWorker() {
 /**
  * Export the queue for adding jobs
  */
-import { Queue } from 'bullmq';
-import { redis } from '../utils/redis';
-
 export const ModerationQueue = new Queue('moderation', {
   connection: redis as any,
 });

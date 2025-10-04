@@ -73,7 +73,7 @@ const processor = async (job: Job<MatchScoringData>) => {
             skip: offset,
             where: { user: { isBanned: false, emailVerified: true } },
             include: { user: true }
-        }) as (Profile & { user: { id: string, latitude: number, longitude: number, geoHash: string } })[];
+        }) as any[];
 
         if (profilesToScore.length === 0) {
             console.log('No more profiles to score. Finishing job.');
@@ -81,18 +81,18 @@ const processor = async (job: Job<MatchScoringData>) => {
         }
 
         // 2. Pre-filter Candidates: Load all profiles with a matching GeoHash prefix (Contextual Geo-Fencing)
-        const geoHashPrefixes = profilesToScore.map(p => p.user.geoHash.substring(0, GEOHASH_PROXIMITY_LENGTH));
+        const geoHashPrefixes = profilesToScore.map((p: any) => p.user.geoHash.substring(0, GEOHASH_PROXIMITY_LENGTH));
         
         // This query is highly simplified; real world uses bounding boxes/PostGIS
         const candidateProfiles = await prisma.profile.findMany({
             where: {
                 user: {
                     geoHash: { startsWith: geoHashPrefixes[0].substring(0, 5) }, // Use a single prefix for the batch origin's area
-                    id: { notIn: profilesToScore.map(p => p.userId) } // Exclude self
+                    id: { notIn: profilesToScore.map((p: any) => p.userId) } // Exclude self
                 }
             },
             include: { user: { select: { id: true, latitude: true, longitude: true, lastActive: true } } }
-        }) as (Profile & { user: { id: string, latitude: number, longitude: number, lastActive: Date } })[];
+        }) as any[];
 
 
         // 3. Score every profile in the batch against every candidate
@@ -143,11 +143,11 @@ const processor = async (job: Job<MatchScoringData>) => {
             await prisma.$transaction(
                 topScores.map(({ candidateId, score }) => {
                     return prisma.matchCandidate.upsert({
-                        where: { userId_candidateProfileId: { userId: scorerId, candidateProfileId: candidateProfile.id } },
+                        where: { userId_candidateProfileId: { userId: scorerId, candidateProfileId: candidateId } },
                         update: { finalScore: score, decayRate: 1.0 }, // Reset decay on update
                         create: {
                             userId: scorerId,
-                            candidateProfileId: candidateProfile.id,
+                            candidateProfileId: candidateId,
                             finalScore: score,
                             decayRate: 1.0
                         }

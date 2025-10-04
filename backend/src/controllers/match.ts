@@ -8,6 +8,7 @@ import { redis } from '../utils/redis';
 import { getRecommendationsForUser, computeMultiCompatibilityScore } from '../services/recommendation';
 import { sendPushToUser } from '../services/notifications';
 import { Match } from '../types/shared';
+import { io as socketEmitter } from '../utils/socketEmitter';
 
 // --- Advanced Helpers ---
 
@@ -142,7 +143,7 @@ export const undoLastSwipe = async (req: Request, res: Response, next: NextFunct
         }
 
         // 3. Rollback Logic
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
             // A. Delete the Like/Dislike record
             await tx.like.delete({ where: { id: lastAction.id } });
 
@@ -191,7 +192,7 @@ export const getMatches = async (req: Request, res: Response, next: NextFunction
             },
         });
 
-        const matchDtos = matches.map(match => {
+        const matchDtos = matches.map((match: any) => {
             const otherUser = match.user1.id === userId ? match.user2 : match.user1;
             const lastMessage = match.messages[0];
 

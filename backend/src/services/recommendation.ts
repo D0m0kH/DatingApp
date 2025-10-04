@@ -17,8 +17,8 @@ export async function computeMultiCompatibilityScore(userId1: string, userId2: s
         select: { userId: true, traitVector: true, valueVector: true, nlpVector: true },
     });
 
-    const p1 = profiles.find(p => p.userId === userId1);
-    const p2 = profiles.find(p => p.userId === userId2);
+    const p1 = profiles.find((p: any) => p.userId === userId1);
+    const p2 = profiles.find((p: any) => p.userId === userId2);
 
     if (!p1 || !p2) return { core: 0.0, chat: 0.0 };
 
@@ -84,7 +84,7 @@ export async function getRecommendationsForUser(
     // 2. Build Primary Query (based on MatchCandidate table)
     
     // Filter candidates based on hard geo/preference limits (if not already filtered by the job)
-    const candidateWhere: Prisma.MatchCandidateWhereInput = {
+    const candidateWhere: any = {
         userId: userId,
         finalScore: { gt: 0.5 }, // Only show relevant scores
         candidateProfile: {
@@ -118,7 +118,7 @@ export async function getRecommendationsForUser(
     });
 
     // 3. Post-processing and DTO mapping
-    const recommendations: UserPublic[] = rawCandidates.map(candidate => {
+    const recommendations: UserPublic[] = rawCandidates.map((candidate: any) => {
         const user = candidate.candidateProfile.user;
         const profile = candidate.candidateProfile;
         
@@ -126,7 +126,7 @@ export async function getRecommendationsForUser(
         let reason = `Core Match: ${(candidate.finalScore * 100).toFixed(0)}%`;
         if (currentGeoHash && user.geoHash.startsWith(currentGeoHash.substring(0, 5))) {
             reason += ", 📍 Nearby You!";
-        } else if (profile.interests.some(i => user.interests.includes(i))) { // STUB: Check for common interest overlap
+        } else if (profile.interests.some((i: any) => user.interests.includes(i))) { // STUB: Check for common interest overlap
             reason += ", 💖 Common Interests";
         }
 
@@ -138,7 +138,7 @@ export async function getRecommendationsForUser(
             geoHash: user.geoHash,
             isIdentityVerified: user.isIdentityVerified,
             isPremium: profile.isPremium,
-            photos: user.photos.map(p => ({
+            photos: user.photos.map((p: any) => ({
                 id: p.id, url: p.url || `https://s3-bucket/photos/${p.s3Key}`, isPrimary: p.isPrimary, status: p.status, aiTags: p.aiTags
             })),
             topInterests: profile.interests.slice(0, 3),

@@ -146,7 +146,7 @@ async function getUserMatches(userId: string): Promise<string[]> {
       select: { id: true },
     });
 
-    return matches.map((m) => m.id);
+    return matches.map((m: any) => m.id);
   } catch (error) {
     console.error('Error fetching user matches:', error);
     return [];

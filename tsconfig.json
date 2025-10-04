@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    /* Basic Options */
+    "target": "es2020",                  /* Specify ECMAScript target version */
+    "module": "commonjs",                /* Specify module code generation */
+    "jsx": "react-native",               /* **CRITICAL FIX:** Enables JSX/TSX support for React Native */
+    "lib": ["es2020"],                   /* Specify library files to be included in the compilation */
+    "rootDir": "app/src",                /* Specify the root directory of input files */
+    "outDir": "dist",                    /* Redirect output structure to the directory */
+    "allowJs": true,                     /* Allow JavaScript files to be compiled */
+    "esModuleInterop": true,             /* Enables compatibility for default imports */
+    "forceConsistentCasingInFileNames": true, /* Ensure that casing is consistent throughout a file */
+    "strict": true,                      /* Enable all strict type-checking options */
+    "skipLibCheck": true,                /* Skip type checking of declaration files */
+    
+    /* Module Resolution Options */
+    "moduleResolution": "node",          /* **CRITICAL FIX:** Determines how modules are resolved (Node.js style) */
+    "baseUrl": ".",                      /* Base directory to resolve non-absolute module names */
+    "paths": {
+      /* Optional: Add aliases for cleaner imports, e.g., import { get } from 'services/api' */
+      "services/*": ["app/src/services/*"],
+      "types/*": ["app/src/types/*"],
+      "styles": ["app/src/styles/index.ts"], // Assuming AppStyles is exported from index.ts
+      "navigation": ["app/src/navigation/index.tsx"]
+    },
+    "resolveJsonModule": true,           /* Allow importing modules with a .json extension */
+    "allowSyntheticDefaultImports": true, /* Allow default imports from modules with no default export */
+    
+    /* Advanced Options */
+    "isolatedModules": true,             /* Ensure each file can be safely transpiled without relying on other files */
+    "noEmit": true,                      /* Do not emit output (only checking types) */
+  },
+  "include": [
+    "app/src/**/*",
+    "index.js",
+    "declarations.d.ts" // If you have a custom declaration file
+  ],
+  "exclude": [
+    "node_modules",
+    "babel.config.js",
+    "metro.config.js",
+    "jest.config.js"
+  ]
+}

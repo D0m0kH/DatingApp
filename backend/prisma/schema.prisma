@@ -1,0 +1,287 @@
+// backend/prisma/schema.prisma
+
+// To update your database schema after changes, run:
+// npx prisma migrate dev --name advanced_init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS (Advanced) ---
+
+enum MatchStatus {
+  // Initial state after one user likes the other
+  PENDING
+  // Mutual like, conversation can start
+  MATCHED
+  // One or both users have blocked or reported the other
+  BLOCKED
+  // Used internally for non-mutual dislikes (to exclude from recommendations)
+  DISLIKED
+  // Advanced: Conversation status
+  CONVERSING
+  // Advanced: User paused activity or ghosted
+  INACTIVE
+}
+
+enum PhotoModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  // Advanced: Requires human review (AI flagged)
+  FLAGGED
+}
+
+enum ReportCategory {
+  SPAM
+  INAPPROPRIATE_CONTENT
+  HARASSMENT
+  FAKE_PROFILE
+  FRAUD
+  OTHER
+}
+
+// --- MODELS (Advanced) ---
+
+model User {
+  id                    String            @id @default(cuid())
+  email                 String            @unique
+  password              String            // Argon2 hashed
+  firstName             String
+  dateOfBirth           DateTime
+  gender                String
+  orientation           String
+  emailVerified         Boolean           @default(false)
+  isIdentityVerified    Boolean           @default(false) // Advanced: ZKP/Biometric check
+  isAdmin               Boolean           @default(false)
+  isBanned              Boolean           @default(false)
+
+  // Advanced: Real-time location data
+  latitude              Float             @default(0.0)
+  longitude             Float             @default(0.0)
+  geoHash               String            @default("") // GeoHash for privacy-preserving proximity
+  lastActive            DateTime          @default(now())
+  
+  // Advanced: FASE (Fingerprint-Aware Session Engine)
+  stripeCustomerId      String?           @unique
+  deviceTokens          Json              @default("[]") // [{ token, platform }]
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  // Relations
+  profile               Profile?
+  photos                Photo[]
+  refreshTokens         RefreshToken[]
+  likesSent             Like[]            @relation("Liker")
+  likesReceived         Like[]            @relation("Liked")
+  matches1              Match[]           @relation("User1")
+  matches2              Match[]           @relation("User2")
+  messages              Message[]         @relation("Sender")
+  reportsSent           Report[]          @relation("Reporter")
+  reportsReceived       Report[]          @relation("Reported")
+  auditLogs             AdminAudit[]
+  
+  // Advanced: Match Candidate Scores
+  matchCandidates       MatchCandidate[]  @relation("ScoredUser")
+
+  // Indexes for GeoHash and core querying
+  @@index([geoHash])
+  @@index([lastActive])
+}
+
+model Profile {
+  id                    String            @id @default(cuid())
+  userId                String            @unique
+  bio                   String?           @db.VarChar(1000)
+  interests             String[]
+  
+  // Advanced: Multi-Vector AI Traits
+  traitVector           Float[]           // Personality Traits (Big 5)
+  valueVector           Float[]           // Core Values (e.g., political, lifestyle)
+  nlpVector             Float[]           // Communication Style (derived from chat/bio)
+  
+  preferences           Json              @default("{}") // Age range, distance, etc.
+  isPremium             Boolean           @default(false)
+  
+  // Advanced: Primary score for feed sorting efficiency
+  recommendationScore   Float             @default(0.0)
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchCandidates       MatchCandidate[]  @relation("CandidateProfile") // Matches where this profile is the candidate
+}
+
+model Photo {
+  id             String                   @id @default(cuid())
+  userId         String
+  s3Key          String
+  url            String?
+  isPrimary      Boolean                  @default(false)
+  status         PhotoModerationStatus    @default(PENDING)
+  // Advanced: AI-generated tags for feature-based matching
+  aiTags         String[]                 @default("[]") 
+
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  user           User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+// Advanced: FASE Token (Fingerprint-Aware Session Engine)
+model RefreshToken {
+  id          String    @id @default(cuid()) // This is the FASE/Fingerprint ID
+  userId      String
+  tokenHash   String    // Argon2 hash of the one-time-use opaque token
+  userAgent   String?
+  expiresAt   DateTime
+  
+  // Advanced: Security fields
+  ipAddress   String?
+  lastUsed    DateTime  @default(now())
+
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model Like {
+  id            String          @id @default(cuid())
+  likerId       String          @map("liker_id")
+  likedId       String          @map("liked_id")
+  isSuperLike   Boolean         @default(false)
+  isMatch       Boolean         @default(false)
+  isDislike     Boolean         @default(false)
+
+  createdAt     DateTime        @default(now())
+
+  liker         User            @relation("Liker", fields: [likerId], references: [id])
+  liked         User            @relation("Liked", fields: [likedId], references: [id])
+
+  @@unique([likerId, likedId])
+  @@index([likedId])
+}
+
+model Match {
+  id            String       @id @default(cuid())
+  userId1       String
+  userId2       String
+  status        MatchStatus  @default(MATCHED)
+  
+  // Advanced: Multi-dimensional score
+  coreCompatibility Float    // Based on traitVector/valueVector
+  chatStyleScore    Float    // Based on nlpVector
+  
+  settings          Json     @default("{}")
+
+  matchedAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user1         User         @relation("User1", fields: [userId1], references: [id])
+  user2         User         @relation("User2", fields: [userId2], references: [id])
+  messages      Message[]
+
+  @@unique([userId1, userId2])
+  @@index([userId1, status])
+  @@index([userId2, status])
+}
+
+model Message {
+  id            String    @id @default(cuid())
+  matchId       String
+  senderId      String
+  text          String?
+  attachments   String[]
+  
+  // Advanced: Granular status
+  messageStatus MessageStatus  @default(SENT) // SENT, DELIVERED, READ
+  
+  // Advanced: NLP/AI analysis of the message content
+  nlpIntent     String?       // e.g., 'open_ended_question', 'flirtatious', 'apology'
+
+  createdAt     DateTime  @default(now())
+
+  match         Match     @relation(fields: [matchId], references: [id])
+  sender        User      @relation("Sender", fields: [senderId], references: [id])
+
+  @@index([matchId, createdAt])
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+
+// Advanced: Pre-computed scores for faster recommendation engine querying
+model MatchCandidate {
+  id                  String      @id @default(cuid())
+  // The user who receives the recommendation (the current swiper)
+  userId              String      @relation("ScoredUser", fields: [userId], references: [id])
+  // The profile being recommended
+  candidateProfileId  String      @relation("CandidateProfile", fields: [candidateProfileId], references: [id])
+  
+  // The final combined score
+  finalScore          Float
+  // Decay field based on last swipe or activity
+  decayRate           Float       @default(1.0) 
+
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  
+  @@unique([userId, candidateProfileId])
+  // Index for fast query of the user's feed
+  @@index([userId, finalScore])
+}
+
+
+model Boost {
+  id            String    @id @default(cuid())
+  userId        String
+  type          String
+  purchasedAt   DateTime  @default(now())
+  expiresAt     DateTime?
+  consumedAt    DateTime?
+}
+
+model Report {
+  id            String         @id @default(cuid())
+  reporterId    String
+  reportedId    String
+  category      ReportCategory
+  details       String
+  attachments   String[]
+  status        String         @default("PENDING")
+  autoBlocked   Boolean        @default(false)
+
+  createdAt     DateTime       @default(now())
+
+  reporter      User           @relation("Reporter", fields: [reporterId], references: [id])
+  reported      User           @relation("Reported", fields: [reportedId], references: [id])
+
+  @@index([reportedId, status])
+}
+
+model AdminAudit {
+  id            String    @id @default(cuid())
+  adminId       String
+  targetUserId  String?
+  action        String
+  details       Json
+  ipAddress     String?
+
+  createdAt     DateTime  @default(now())
+}

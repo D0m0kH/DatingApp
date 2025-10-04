@@ -1,0 +1,96 @@
+# .github/workflows/ci.yml
+# Top-level CI pipeline for the monorepo (Backend and Frontend)
+
+name: CI / Advanced Build & Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # --- 1. Backend CI: Lint, Type Check, Test ---
+  backend-ci:
+    name: ⚙️ Backend Security & Logic Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+        
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: 📥 Install dependencies
+        run: npm install
+
+      - name: 🔎 Run Type Check (tsc --noEmit)
+        run: npm run typecheck
+
+      - name: 🔬 Run Lint (ESLint + Security)
+        run: npm run lint
+
+      - name: 🛡️ Run Security Scan (npm audit)
+        run: npm audit --audit-level=high
+
+      - name: 🧪 Run Unit/Integration Tests (FASE-Aware)
+        run: npm run test
+        env:
+          # Use CI environment variables
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DATABASE_URL: postgresql://test:test@localhost:5432/testdb_ci
+
+      - name: 🔨 Build Production Artifact
+        run: npm run build
+
+      - name: ⬆️ Upload Backend Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage-report
+          path: backend/coverage/
+          
+  # --- 2. Frontend CI: Lint, Type Check, Build (Requires separate 'app' folder) ---
+  frontend-ci:
+    name: 📱 Frontend Quality Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'app/package-lock.json'
+
+      - name: 📥 Install dependencies
+        run: npm install
+
+      - name: 🔎 Run Type Check (tsc --noEmit)
+        run: npm run typecheck
+
+      - name: 🔬 Run Lint
+        run: npm run lint
+
+      - name: 📦 Pre-Build App Bundle (for sanity check)
+        # Use Expo's bundle command to ensure the app compiles and packages without errors
+        run: npm run build:bundle
+        env:
+          # Set mock environment variables used by Constants.expoConfig?.extra
+          EXPO_PUBLIC_API_URL: 'https://ci-api.example.com/api'

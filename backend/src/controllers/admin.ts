@@ -3,7 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
 import { NotFoundError, AppError } from '../utils/errors';
-import { PhotoModerationStatus } from '@prisma/client';
+import { PhotoModerationStatus } from '../types/shared';
 
 // --- Admin Audit Logging Helper ---
 

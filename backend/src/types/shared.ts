@@ -1,7 +1,37 @@
 // backend/src/types/shared.ts
 
 import { z, ZodSchema } from 'zod';
-import { MatchStatus, PhotoModerationStatus } from '@prisma/client'; // Import Prisma Enums for strictness
+
+// Define enums locally to avoid Prisma Client generation issues
+export enum MatchStatus {
+  PENDING = 'PENDING',
+  MATCHED = 'MATCHED',
+  BLOCKED = 'BLOCKED',
+  DISLIKED = 'DISLIKED',
+  CONVERSING = 'CONVERSING'
+}
+
+export enum PhotoModerationStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  FLAGGED = 'FLAGGED'
+}
+
+export enum ReportCategory {
+  SPAM = 'SPAM',
+  INAPPROPRIATE_CONTENT = 'INAPPROPRIATE_CONTENT',
+  HARASSMENT = 'HARASSMENT',
+  FAKE_PROFILE = 'FAKE_PROFILE',
+  FRAUD = 'FRAUD',
+  OTHER = 'OTHER'
+}
+
+export enum MessageStatus {
+  SENT = 'SENT',
+  DELIVERED = 'DELIVERED',
+  READ = 'READ'
+}
 
 /**
  * @description Represents a user's public-facing information for the swipe deck.

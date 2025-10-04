@@ -5,7 +5,7 @@ import { requireAuth } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import * as reportController from '../controllers/report';
 import { z } from 'zod';
-import { ReportCategory } from '@prisma/client';
+import { ReportCategory } from '../types/shared';
 
 const router = Router();
 
@@ -14,7 +14,7 @@ router.use(requireAuth);
 const ReportCreateSchema = z.object({
     reportedUserId: z.string().min(1),
     category: z.nativeEnum(ReportCategory, {
-        errorMap: () => ({ message: `Category must be one of: ${Object.keys(ReportCategory).join(', ')}` })
+        message: `Category must be one of: ${Object.keys(ReportCategory).join(', ')}`
     }),
     details: z.string().min(10).max(1000),
     attachments: z.array(z.string()).optional(),

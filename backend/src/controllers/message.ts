@@ -3,9 +3,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
 import { AppError, AuthError, RateLimitError } from '../utils/errors';
-import { Message, MessageSendDto } from '../types/shared';
+import { Message, MessageSendDto, MessageStatus } from '../types/shared';
 import { redis } from '../utils/redis';
-import { MessageStatus } from '@prisma/client';
 
 // --- Anti-Spam Rate Limiter (Server-side per-match, Redis-backed conceptual) ---
 const MESSAGE_RATE_LIMIT_KEY = (matchId: string, userId: string) => `msg:rate:${matchId}:${userId}`;

@@ -3,8 +3,12 @@
 import { Worker, Job, Queue } from 'bullmq';
 import { prisma } from '../utils/prisma';
 import { redis } from '../utils/redis';
-import { Profile, Prisma } from '@prisma/client';
 import * as geofire from 'geofire-common';
+
+// Export helper function for use in other modules
+export function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  return geofire.distanceBetween([lat1, lon1], [lat2, lon2]);
+}
 
 // --- BullMQ Queue Setup ---
 const connection = {

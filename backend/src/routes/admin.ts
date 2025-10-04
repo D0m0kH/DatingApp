@@ -6,7 +6,7 @@ import { requireAdmin } from '../middleware/admin';
 import * as adminController from '../controllers/admin';
 import { validateParams, validateQuery, validateBody } from '../middleware/validate';
 import { z } from 'zod';
-import { PhotoModerationStatus } from '@prisma/client';
+import { PhotoModerationStatus } from '../types/shared';
 
 const router = Router();
 

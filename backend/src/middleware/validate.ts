@@ -20,7 +20,7 @@ export const validate = (schema: ZodSchema, source: 'body' | 'query' | 'params' 
     } catch (error) {
       if (error instanceof ZodError) {
         // Map Zod errors to rich details object for client consumption
-        const details = error.errors.map(err => ({
+        const details = error.issues.map((err: any) => ({
           field: err.path.join('.'),
           message: err.message,
           code: err.code,

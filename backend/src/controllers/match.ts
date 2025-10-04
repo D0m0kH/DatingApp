@@ -3,12 +3,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
 import { AppError, AuthError, NotFoundError } from '../utils/errors';
-import { MatchStatus, PhotoModerationStatus } from '@prisma/client';
+import { MatchStatus, PhotoModerationStatus } from '../types/shared';
 import { redis } from '../utils/redis';
 import { getRecommendationsForUser, computeMultiCompatibilityScore } from '../services/recommendation';
 import { sendPushToUser } from '../services/notifications';
 import { Match } from '../types/shared';
-import { io as socketEmitter } from '../utils/socketEmitter';
 
 // --- Advanced Helpers ---
 

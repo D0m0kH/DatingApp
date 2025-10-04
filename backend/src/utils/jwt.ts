@@ -37,10 +37,10 @@ export type JwtPayload = {
  * @param expiresIn The duration before the token expires (e.g., '15m'). Defaults to '15m'.
  * @returns The signed JWT string.
  */
-export function signJwt(payload: { userId: string, email: string, fingerprintId: string }, expiresIn: string = '15m'): string {
+export function signJwt(payload: { userId: string, email: string, fingerprintId: string }, expiresIn: string | number = '15m'): string {
   const signOptions: SignOptions = {
     issuer: JWT_ISSUER,
-    expiresIn,
+    expiresIn: expiresIn as any, // Type compatibility workaround for jsonwebtoken
     algorithm: JWT_ALGORITHM as jwt.Algorithm, // Enforce configured algorithm
     // Advanced: PoP Placeholder - Add a key thumbprint for sender constraint (PoP)
     // audience: payload.fingerprintId // Can use fingerprint as audience constraint

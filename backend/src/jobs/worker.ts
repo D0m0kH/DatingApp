@@ -52,4 +52,11 @@ export function startModerationWorker() {
 /**
  * Export the queue for adding jobs
  */
-export { Queue } from 'bullmq';
+import { Queue } from 'bullmq';
+import { redis } from '../utils/redis';
+
+export const ModerationQueue = new Queue('moderation', {
+  connection: redis as any,
+});
+
+export { Queue };

@@ -4,11 +4,10 @@ import { Request, Response, NextFunction } from 'express';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import * as geofire from 'geofire-common';
-import { PhotoModerationStatus } from '@prisma/client';
 
 import { prisma } from '../utils/prisma';
 import { NotFoundError, AppError, AuthError } from '../utils/errors';
-import { Dtos, ProfileUpdateDto, UserPublic } from '../types/shared';
+import { PhotoModerationStatus, ProfileUpdateDto, UserPublic } from '../types/shared';
 
 // --- AWS S3 Setup ---
 const S3_BUCKET = process.env.S3_BUCKET || 'dating-app-photos';

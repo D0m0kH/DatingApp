@@ -1,9 +1,8 @@
 // backend/src/services/recommendation.ts
 
 import { prisma } from '../utils/prisma';
-import { UserPublic } from '../types/shared';
-import { PhotoModerationStatus, Prisma } from '@prisma/client';
-import { haversineDistance } from '../jobs/matchScoring'; // Re-use distance util
+import { UserPublic, PhotoModerationStatus } from '../types/shared';
+import { haversineDistance } from '../jobs/matchScoring';
 
 // --- Core Compatibility Computation ---
 

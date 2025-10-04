@@ -2,8 +2,9 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
+import { redis } from '../utils/redis';
 import { AppError, AuthError } from '../utils/errors';
-import { ReportCategory } from '@prisma/client';
+import { ReportCategory } from '../types/shared';
 import { Queue } from 'bullmq';
 
 // --- BullMQ Queue for Moderation ---

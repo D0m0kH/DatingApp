@@ -2,9 +2,9 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-import { verifyToken } from './utils/jwt';
-import prisma from './lib/prisma';
-import redis from './lib';
+import { verifyJwt } from './utils/jwt';
+import { prisma } from './utils/prisma';
+import { redis } from './utils/redis';
 
 // ============================================================================
 // Type Definitions
@@ -256,14 +256,14 @@ export function initSocket(httpServer: HTTPServer): SocketIOServer {
       }
 
       // Verify JWT token
-      const decoded = await verifyToken(token);
+      const decoded = verifyJwt(token);
 
-      if (!decoded || !decoded.id) {
+      if (!decoded || !decoded.userId) {
         return next(new Error('Invalid authentication token'));
       }
 
       // Attach user info to socket
-      (socket as AuthenticatedSocket).userId = decoded.id;
+      (socket as AuthenticatedSocket).userId = decoded.userId;
       (socket as AuthenticatedSocket).userEmail = decoded.email;
 
       next();

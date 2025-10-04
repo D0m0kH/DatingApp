@@ -1,6 +1,7 @@
 // backend/src/utils/jwt.ts
 
-import jwt, { SignOptions, VerifyOptions, JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
+import { SignOptions, VerifyOptions, JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { Request } from 'express';
 import { AuthError } from './errors';
 
@@ -36,7 +37,7 @@ export type JwtPayload = {
  * @param expiresIn The duration before the token expires (e.g., '15m'). Defaults to '15m'.
  * @returns The signed JWT string.
  */
-export function signJwt(payload: { userId: string, email: string, fingerprintId: string }, expiresIn: string | number = '15m'): string {
+export function signJwt(payload: { userId: string, email: string, fingerprintId: string }, expiresIn: string = '15m'): string {
   const signOptions: SignOptions = {
     issuer: JWT_ISSUER,
     expiresIn,

@@ -6,9 +6,9 @@ import crypto from 'crypto';
 import { ZodError } from 'zod';
 
 import { prisma } from '../utils/prisma';
-import { signJwt } from '../utils/jwt';
+import { signJwt, getTokenFromHeader, verifyJwt } from '../utils/jwt';
 import { AuthError, ValidationError, AppError, NotFoundError, IdentityError } from '../utils/errors';
-import { Dtos, AuthResponse, RegisterDto, LoginDto } from '../types/shared';
+import { AuthResponse, RegisterDto, LoginDto } from '../types/shared';
 
 // --- Stubbed Function for Email Service ---
 const sendVerificationEmail = async (email: string, token: string) => {

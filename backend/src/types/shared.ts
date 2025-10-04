@@ -182,7 +182,7 @@ export const ProfileUpdateDtoSchema = z.object({
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   accuracyMeters: z.number().min(0).max(5000).optional(), // Granular privacy control
-  preferences: z.record(z.any()).optional(),
+  preferences: z.record(z.string(), z.any()).optional(),
 }).strict();
 export type ProfileUpdateDto = z.infer<typeof ProfileUpdateDtoSchema>;
 

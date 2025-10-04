@@ -3,9 +3,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
 import { AppError, AuthError, RateLimitError } from '../utils/errors';
-import { Dtos, Message } from '../types/shared';
+import { Message, MessageSendDto } from '../types/shared';
 import { redis } from '../utils/redis';
-import { io as socketEmitter } from '../utils/socketEmitter';
 import { MessageStatus } from '@prisma/client';
 
 // --- Anti-Spam Rate Limiter (Server-side per-match, Redis-backed conceptual) ---
